@@ -1,0 +1,104 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Based on: BuildingSceneLayer with Slice widget | Sample | ArcGIS API for JavaScript 4.23</title>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <link href="https://js.arcgis.com/4.23/esri/themes/light/main.css" rel="stylesheet" type="text/css" />
+    <script src="https://js.arcgis.com/4.23/"></script>
+
+    <script>
+      require(["esri/WebScene", "esri/views/SceneView", "esri/layers/BuildingSceneLayer", "esri/widgets/Fullscreen"], (
+        WebScene,
+        SceneView,
+        BuildingSceneLayer,
+        Fullscreen
+      ) => {
+        const doc = parent.document;
+        doc.getElementById("local-clipping").onclick = toggleClipping;
+        let clipped = false;
+
+        const clippingExtent = {
+          spatialReference: {
+            latestWkid: 3857,
+            wkid: 102100,
+          },
+          xmin: -13045241.329652093,
+          ymin: 4036780.474001343,
+          xmax: -13045119.666179948,
+          ymax: 4036937.733336518,
+        };
+        // Load webscene and display it in a SceneView
+        const webscene = new WebScene({
+          portalItem: {
+            id: "c7470b0e4e4c44288cf287d658155300",
+          },
+        });
+        webscene.basemap = "gray-vector";
+        const view = new SceneView({
+          container: "viewDiv",
+          //clippingArea: clippingExtent,
+          viewingMode: "local",
+          map: webscene,
+          environment: {
+            background: {
+              type: "color",
+              color: [255, 255, 255, 1],
+            },
+            starsEnabled: false,
+            atmosphereEnabled: false,
+          },
+          camera: {
+            position: {
+              spatialReference: {
+                latestWkid: 3857,
+                wkid: 102100,
+              },
+              x: -13044954.22171991,
+              y: 4036737.1566524818,
+              z: 476.21285493123094,
+            },
+            heading: 298.6239313109147,
+            tilt: 74.77588016827869,
+          },
+        });
+
+        // Create the BuildingSceneLayer and add it to the webscene
+        const buildingLayer = new BuildingSceneLayer({
+          url: "https://tiles.arcgis.com/tiles/V6ZHFr6zdgNZuVG0/arcgis/rest/services/BSL__4326__US_Redlands__EsriAdminBldg_PublicDemo/SceneServer",
+          title: "Administration Building, Redlands - Building Scene Layer",
+        });
+        webscene.layers.add(buildingLayer);
+
+        function toggleClipping() {
+          clipped = !clipped;
+          if (clipped) {
+            view.clippingArea = clippingExtent;
+          } else {
+            view.clippingArea = null;
+          }
+        }
+
+        const fullscreen = new Fullscreen({
+          view: view,
+        });
+        view.ui.add(fullscreen, "bottom-left");
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>

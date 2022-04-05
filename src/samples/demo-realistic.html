@@ -1,0 +1,206 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Weather visualization | Sample | ArcGIS API for JavaScript 4.23</title>
+    <style>
+      html,
+      body,
+      #viewDiv {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      #button {
+        width: 100%;
+        margin: 20px 0 0 0;
+      }
+    </style>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.23/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.23/"></script>
+
+    <script>
+      require([
+        "esri/Map",
+        "esri/layers/SceneLayer",
+        "esri/views/SceneView",
+        "esri/layers/FeatureLayer",
+        "esri/layers/IntegratedMeshLayer",
+        "esri/widgets/Expand",
+        "esri/widgets/Weather",
+        "esri/widgets/Daylight",
+        "esri/widgets/Fullscreen",
+      ], (
+        Map,
+        SceneLayer,
+        SceneView,
+        FeatureLayer,
+        IntegratedMeshLayer,
+        Expand,
+        Weather,
+        Daylight,
+        Fullscreen
+      ) => {
+        /*****************************************************************
+         * STEP 0
+         * Create simple app
+         *****************************************************************/
+
+        // Create a new map
+        const map = new Map({
+          basemap: "satellite",
+          //ground: "world-elevation",
+        });
+
+        // Create a new sceneView and set the weather to cloudy
+        const view = new SceneView({
+          container: "viewDiv",
+
+          map: map,
+          camera: {
+            position: {
+              spatialReference: {
+                latestWkid: 3857,
+                wkid: 102100,
+              },
+              x: 966656.222569399,
+              y: 6464220.886886281,
+              z: 127.02253505121917,
+            },
+            heading: 313.141756179622,
+            tilt: 88.50567036168142,
+          },
+          qualityProfile: "high",
+          environment: {
+            lighting: { waterReflectionEnabled: true },
+            atmosphere: {
+              quality: "high",
+            },
+            weather: { type: "cloudy", cloudCover: 0.3 }, // autocasts to new CloudyWeather({ cloudCover: 0.6 })
+          },
+        });
+
+        /*****************************************************************
+         * STEP 1
+         * Add IM with the city layer
+         *****************************************************************/
+
+        const cityLayer = new IntegratedMeshLayer({
+          url: "https://tiles.arcgis.com/tiles/cFEFS0EWrhfDeVw9/arcgis/rest/services/Buildings_Frankfurt_2021/SceneServer",
+          // Frankfurt integrated mesh data provided by nFrames and Aerowest
+          copyright: "nFrames - Aerowest",
+          title: "Integrated Mesh Frankfurt",
+        });
+
+        function addCityLayer() {
+          map.add(cityLayer);
+        }
+
+        /*****************************************************************
+         * STEP 2
+         * Add water layer
+         *****************************************************************/
+
+        const waterLayer = new FeatureLayer({
+          url: "https://services7.arcgis.com/wdgKFvvZvYZ3Biji/arcgis/rest/services/Frankfurt_water2/FeatureServer",
+          elevationInfo: {
+            //mode: "on-the-ground",
+            mode: "relative-to-scene",
+            offset: -85,
+          },
+          renderer: {
+            type: "simple",
+            symbol: {
+              type: "polygon-3d",
+              symbolLayers: [
+                {
+                  type: "water",
+                  waveDirection: 125,
+                  color: "#454b3b",
+                  waveStrength: "moderate",
+                  waterbodySize: "medium",
+                },
+              ],
+            },
+          },
+        });
+
+        function addWaterLayer() {
+          map.add(waterLayer);
+        }
+
+        /*****************************************************************
+         * STEP 3
+         * Add the widgets' UI elements to the view: WEATHER
+         *****************************************************************/
+
+        const weatherExpand = new Expand({
+          view: view,
+          content: new Weather({
+            view: view,
+          }),
+          group: "top-right",
+          expanded: true,
+        });
+
+        function addWeatherWidget() {
+          view.ui.add([weatherExpand], "top-right");
+        }
+
+        /*****************************************************************
+         * STEP 4
+         * Add the widgets' UI elements to the view: DAYLIGHT
+         *****************************************************************/
+
+        const daylightExpand = new Expand({
+          view: view,
+          content: new Daylight({
+            view: view,
+          }),
+          group: "top-right",
+        });
+
+        function addDaylightWidget() {
+          view.ui.add([daylightExpand], "top-right");
+        }
+
+        /*****************************************************************
+         * UI and controls
+         *
+         *****************************************************************/
+
+        const fullscreen = new Fullscreen({
+          view: view,
+        });
+        view.ui.add(fullscreen, "bottom-left");
+
+        window.addEventListener("keypress", onKeypress, false);
+        function onKeypress(event) {
+          //console.log(event);
+          if (event.key == "1") {
+            console.log("1");
+            addCityLayer();
+          } else if (event.key == "2") {
+            console.log("2");
+            addWaterLayer();
+          } else if (event.key == "3") {
+            console.log("3");
+            addWeatherWidget();
+          } else if (event.key == "4") {
+            console.log("4");
+            addDaylightWidget();
+          } else if (event.key == "c") {
+            console.log(view.camera);
+          }
+        }
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>

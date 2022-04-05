@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Flat/volumetric symbols</title>
+
+    <link
+      rel="stylesheet"
+      href="../../../node_modules/@arcgis/core/assets/esri/themes/light/main.css"
+    />
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+      #paneDiv {
+        padding: 12px;
+        background-color: white;
+      }
+    </style>
+
+    <script src="./main.ts" type="module"></script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+    <div id="paneDiv" class="esri-widget">
+      <label>Show points with symbology</label>
+      <input type="checkbox" name="toggle-symbology" id="toggle-symbology" />
+    </div>
+  </body>
+</html>
