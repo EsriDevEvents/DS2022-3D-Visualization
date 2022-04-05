@@ -1,0 +1,287 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Based on: Data-driven extrusion | Sample | ArcGIS API for JavaScript 4.22</title>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.22/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.22/"></script>
+
+    
+
+    <script>
+      require([
+        "esri/Map",
+        "esri/views/SceneView",
+        "esri/layers/FeatureLayer",
+        "esri/renderers/SimpleRenderer",
+        "esri/symbols/PolygonSymbol3D",
+        "esri/symbols/FillSymbol3DLayer",
+        "esri/symbols/ExtrudeSymbol3DLayer",
+        "esri/widgets/Expand",
+        "esri/widgets/Legend",
+        "esri/widgets/Fullscreen",
+      ], (
+        Map,
+        SceneView,
+        FeatureLayer,
+        SimpleRenderer,
+        PolygonSymbol3D,
+        FillSymbol3DLayer,
+        ExtrudeSymbol3DLayer,
+        Expand,
+        Legend,
+        Fullscreen
+      ) => {
+        let symbol3D = false;
+
+        // limit visualization to southeast U.S. counties
+        const defExp = [
+          "STATE = 'LA'",
+          "STATE = 'AL'",
+          "STATE = 'AR'",
+          "STATE = 'MS'",
+          "STATE = 'TN'",
+          "STATE = 'GA'",
+          "STATE = 'FL'",
+          "STATE = 'SC'",
+          "STATE = 'NC'",
+          "STATE = 'VA'",
+          "STATE = 'KY'",
+          "STATE = 'WV'",
+        ];
+
+        /*****************************************************************
+         * In this case we set two visual variables on the renderer. Since
+         * we're defining both size and color based on data values, there's
+         * no need to specify defaults in the `symbol` property of the
+         * renderer. In 3D it is easier to visually perceive size differences
+         * when they are combined with color. Therefore we set up both a
+         * size and a color visual variable based on the values of the same
+         * field.
+         *
+         * Notice that the data value ramps for each is slightly different.
+         * Color allows us to see the spatial trend in a tight range, whereas
+         * size can be used to observe nuances between features of the same
+         * color.
+         *****************************************************************/
+
+        const renderer2D = new SimpleRenderer({
+          symbol: new PolygonSymbol3D({
+            symbolLayers: [new FillSymbol3DLayer()],
+          }),
+          visualVariables: [
+            {
+              type: "size",
+              field: "POP_POVERTY",
+              stops: [
+                {
+                  value: 1000,
+                  size: 10000,
+                  label: "1,000",
+                },
+                {
+                  value: 150000,
+                  size: 300000,
+                  label: ">150,000",
+                },
+              ],
+            },
+            {
+              type: "color",
+              field: "POP_POVERTY",
+              normalizationField: "TOTPOP_CY",
+              legendOptions: {
+                title: "% population with income below poverty level",
+              },
+              stops: [
+                {
+                  value: 0.1,
+                  color: "#FFFCD4",
+                  label: "<15%",
+                },
+                {
+                  value: 0.35,
+                  color: [153, 83, 41],
+                  label: ">35%",
+                },
+              ],
+            },
+          ],
+        });
+
+        const renderer3D = new SimpleRenderer({
+          symbol: new PolygonSymbol3D({
+            symbolLayers: [new ExtrudeSymbol3DLayer()],
+          }),
+          visualVariables: [
+            {
+              type: "size",
+              field: "POP_POVERTY",
+              stops: [
+                {
+                  value: 1000,
+                  size: 10000,
+                  label: "1,000",
+                },
+                {
+                  value: 150000,
+                  size: 300000,
+                  label: ">150,000",
+                },
+              ],
+            },
+            {
+              type: "color",
+              field: "POP_POVERTY",
+              normalizationField: "TOTPOP_CY",
+              legendOptions: {
+                title: "% population with income below poverty level",
+              },
+              stops: [
+                {
+                  value: 0.1,
+                  color: "#FFFCD4",
+                  label: "<15%",
+                },
+                {
+                  value: 0.35,
+                  color: [153, 83, 41],
+                  label: ">35%",
+                },
+              ],
+            },
+          ],
+        });
+
+        const povLayer = new FeatureLayer({
+          url: "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/counties_politics_poverty/FeatureServer/0",
+          renderer: symbol3D ? renderer3D : renderer2D,
+          title: "Population living in poverty by county",
+          outFields: ["*"],
+          popupTemplate: {
+            // autocasts as new PopupTemplate()
+            title: "{COUNTY}, {STATE}",
+            content: "{POP_POVERTY} of {TOTPOP_CY} people live below the poverty line.",
+            fieldInfos: [
+              {
+                fieldName: "POP_POVERTY",
+                format: {
+                  digitSeparator: true,
+                  places: 0,
+                },
+              },
+              {
+                fieldName: "TOTPOP_CY",
+                format: {
+                  digitSeparator: true,
+                  places: 0,
+                },
+              },
+            ],
+          },
+          definitionExpression: defExp.join(" OR "), // only display counties from states in defExp
+        });
+
+        const map = new Map({
+          basemap: "gray-vector",
+          layers: [povLayer],
+        });
+
+        const view = new SceneView({
+          container: "viewDiv",
+          map: map,
+          camera: {
+            position: {
+              spatialReference: {
+                latestWkid: 3857,
+                wkid: 102100,
+              },
+              x: -9847212.707338158,
+              y: 1711139.0373920829,
+              z: 1566229.7149290591,
+            },
+            heading: 9.57087321478478,
+            tilt: 44.10528242942899,
+          },
+        });
+
+        povLayer.when(() => {
+          const legendExpand = new Expand({
+            view: view,
+            content: new Legend({
+              view: view,
+            }),
+            group: "bottom-right",
+            expanded: false,
+          });
+          view.ui.add(legendExpand, "bottom-right");
+        });
+
+        const fullscreen = new Fullscreen({
+          view: view,
+        });
+        view.ui.add(fullscreen, "bottom-left");
+
+        // - - - - - - - - - - - - - - - -
+        // Reveal.js slide interaction
+        // - - - - - - - - - - - - - - - -
+
+        /*const doc = parent.document;
+        doc.getElementById("polygon-to-extrusion").onclick = polygonToExtrusion;
+        */
+
+        function polygonToExtrusion(input) {
+          symbol3D = input;
+          //transitLayer.elevationInfo.mode = symbol3D ? "relative-to-ground" : "on-the-ground";
+          povLayer.renderer = symbol3D ? renderer3D : renderer2D;
+        }
+
+        onFragment("fragment-polygon-to-extrusion", () => {
+          polygonToExtrusion(true);
+        });
+
+        onFragment("fragment-extrusion-to-polygon", () => {
+          polygonToExtrusion(false);
+        });
+
+        // - - - - - - - - - - - - - - - -
+        // Reveal.js helpers
+        // - - - - - - - - - - - - - - - -
+
+        function onFragment(elementId, doSomething) {
+          const run = () => {
+            const currentId = getCurrentFragmentId();
+            //console.log(elementId + " " + currentId);
+            if (currentId === elementId) {
+              doSomething();
+            }
+          };
+
+          parent.Reveal.addEventListener("fragmenthidden", run);
+          parent.Reveal.addEventListener("fragmentshown", run);
+          run();
+        }
+
+        function getCurrentSlide() {
+          //console.log("getCurrentSlide");
+          return parent.Reveal.getCurrentSlide();
+        }
+
+        function getCurrentFragment() {
+          //console.log("getCurrentFragment");
+          return getCurrentSlide().querySelector(".current-fragment") ?? null;
+        }
+        function getCurrentFragmentId() {
+          //console.log("getCurrentFragmentId");
+          return getCurrentFragment()?.getAttribute("data-fragment-id") ?? null;
+        }
+      });
+    </script>
+    <link rel="stylesheet" href="https://esridevsummit.github.io/DS2022-3D-Visualization/assets/data-layer.html.91456a58.css">
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>
