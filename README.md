@@ -4,7 +4,7 @@ This repository contains the 3D Visualization presentation and accompanying code
 
 ## Presentation
 
-[Live presentation: 3D Visualization](https://esridevsummit.github.io/DS2022-3D-Visualization/)
+[Live presentation: 3D Visualization](https://esridevevents.github.io/DS2022-3D-Visualization/)
 
 - Arno Fiva, Esri R&D Center Zürich
 - Lisa Staehli, Esri R&D Center Zürich
