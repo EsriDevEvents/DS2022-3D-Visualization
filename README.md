@@ -4,8 +4,7 @@ This repository contains the 3D Visualization presentation and accompanying code
 
 ## Presentation
 
-[Live presentation: 3D Visualization](https://esridevevents.github.io/
-arcgis-js-api-for-javascript-3d-visualization/)
+[Live presentation: 3D Visualization](https://esridevevents.github.io/arcgis-js-api-for-javascript-3d-visualization/)
 
 - Arno Fiva, Esri R&D Center Zürich
 - Lisa Staehli, Esri R&D Center Zürich
