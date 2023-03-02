@@ -16,7 +16,7 @@ for (const item of readdirSync(samplesFolder, { withFileTypes: true })) {
 }
 
 module.exports = defineConfig(({ command }) => ({
-  base: command === "build" ? "https://esridevsummit.github.io/DS2022-3D-Visualization/" : "./",
+  base: command === "build" ? "https://esridevsummit.github.io/arcgis-js-api-for-javascript-3d-visualization/" : "./",
   build: {
     rollupOptions: { input },
     minify: "esbuild",
